@@ -1,0 +1,22 @@
+package com.ashish.expensetracker.exception;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ErrorResponse {
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private Instant timestamp;
+    private int status;
+    private String message;
+    private String path;
+}
