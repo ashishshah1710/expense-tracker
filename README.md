@@ -98,7 +98,7 @@ src/main/java/com/ashish/expensetracker/
 ├── dto/             # Request/response DTOs
 ├── exception/       # Exception handling
 ├── model/           # JPA entities
-├── repository/      # Data access
+├── repository/      # Data access #docker run --name expense-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=expense_tracker -p 5432:5432 -d postgres
 ├── security/        # JWT, filters, security config
 └── service/         # Business logic
 ```
