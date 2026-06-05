@@ -1,0 +1,276 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-expense-tracker-api",
+    "name": "Expense Tracker API",
+    "description": "REST API collection for the Expense Tracker service.\n\n**Setup**\n1. Import this collection and the environment file.\n2. Select the *Expense Tracker - Local* environment.\n3. Run **Register** (once) then **Login** — the JWT is saved automatically.\n4. Use the Expenses requests (Bearer auth is applied at collection level).\n\n**Base URL:** `http://localhost:8080`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwtToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "jwtToken",
+      "value": ""
+    },
+    {
+      "key": "expenseId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Public endpoints — no JWT required.",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('jwtToken', json.token);",
+                  "    pm.environment.set('jwtToken', json.token);",
+                  "    pm.test('Token received', () => pm.expect(json.token).to.be.a('string').and.not.empty);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new user. Returns JWT token on success (201)."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('jwtToken', json.token);",
+                  "    pm.environment.set('jwtToken', json.token);",
+                  "    pm.test('Token received', () => pm.expect(json.token).to.be.a('string').and.not.empty);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login and receive JWT. Token is saved to `jwtToken` for subsequent requests."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Expenses",
+      "description": "Protected endpoints — requires Bearer JWT (inherited from collection auth).",
+      "item": [
+        {
+          "name": "Create Expense",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('expenseId', String(json.id));",
+                  "    pm.environment.set('expenseId', String(json.id));",
+                  "    pm.test('Expense created', () => pm.expect(json.id).to.be.a('number'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 45.50,\n  \"category\": \"FOOD\",\n  \"description\": \"Lunch at cafe\",\n  \"date\": \"2024-06-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/expenses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "expenses"]
+            },
+            "description": "Create a new expense. Categories: FOOD, TRANSPORT, HOUSING, UTILITIES, ENTERTAINMENT, HEALTHCARE, SHOPPING, OTHER."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Expenses (paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/expenses?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "expenses"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Page number (0-based)"
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Page size"
+                },
+                {
+                  "key": "category",
+                  "value": "FOOD",
+                  "description": "FOOD | TRANSPORT | HOUSING | UTILITIES | ENTERTAINMENT | HEALTHCARE | SHOPPING | OTHER",
+                  "disabled": true
+                },
+                {
+                  "key": "startDate",
+                  "value": "2024-01-01",
+                  "description": "ISO date (yyyy-MM-dd)",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "2024-12-31",
+                  "description": "ISO date (yyyy-MM-dd)",
+                  "disabled": true
+                },
+                {
+                  "key": "minAmount",
+                  "value": "10",
+                  "description": "Minimum amount",
+                  "disabled": true
+                },
+                {
+                  "key": "maxAmount",
+                  "value": "500",
+                  "description": "Maximum amount",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List expenses with pagination. Enable optional query params to filter by category, date range, or amount range."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Expense by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/expenses/{{expenseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "expenses", "{{expenseId}}"]
+            },
+            "description": "Get a single expense by ID. Uses `expenseId` variable (set automatically after Create Expense)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Expense",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 52.00,\n  \"category\": \"FOOD\",\n  \"description\": \"Lunch at cafe (updated)\",\n  \"date\": \"2024-06-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/expenses/{{expenseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "expenses", "{{expenseId}}"]
+            },
+            "description": "Update an existing expense by ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Expense",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/expenses/{{expenseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "expenses", "{{expenseId}}"]
+            },
+            "description": "Delete an expense by ID. Returns 204 No Content on success."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
